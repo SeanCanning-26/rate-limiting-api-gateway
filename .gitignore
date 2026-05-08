@@ -39,3 +39,15 @@ api-gateway/src/main/resources/application-local.properties
 # Logs
 *.log
 logs/
+
+# Python cache / generated files
+__pycache__/
+*.pyc
+
+# Secret/local files
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+id_ed25519
