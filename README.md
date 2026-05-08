@@ -1,26 +1,55 @@
-# CS335 Microsoft Project 3:
-## Rate Limiting and Abuse Detection API Gateway
+# Rate Limiting and Abuse Detection API Gateway
 
-> NOT FINAL / TO BE UPDATED (last update: April 9th 2026)
+A university team project for CS335 that implements a lightweight API gateway for protecting backend services from excessive or abusive traffic.
+
+The gateway validates API keys, enforces per-client rate limits, detects abuse patterns, forwards valid requests to a backend service, and exposes logs and metrics for observability.
+
+## Project Context
+
+This project was developed as part of a CS335 university team project in collaboration with Microsoft.
+
+## My Contribution
+
+My main contribution focused on the rate limiting algorithm and gateway enforcement logic.
+
+I worked on:
+- Per-client request tracking
+- Rate limit enforcement
+- HTTP 429 response handling
+- Testing rate-limited request flows
+- Supporting gateway behaviour during the final demo
+
+## Credits
+
+This project was developed by a CS335 university team in collaboration with Microsoft.
+
+Team contributors:
+- Sean Canning — rate limiting algorithm and gateway enforcement logic
+- Vlad — dynamic rate limiting algorithm and final dashboard
+- Mateo — logging, metrics, documentation, and project overview
+- Cathy — API gateway usage documentation and testing instructions
+- Avneet — backend service setup, gateway setup documentation, and system overview
+
+Other team members also contributed to implementation, testing, documentation, and demo preparation.
 
 ---
 
 ## Project Overview
-> Added by Mateo
 
-This project implements a **Rate Limiting and Abuse Detection API Gateway**. Which is the single point of access for clients wanting to use backend services. The gateway handles incoming requests, routes valid ones to the appropriate service and protects backend services by controlling access frequency and detecting user misuse
+This project implements a **Rate Limiting and Abuse Detection API Gateway**, which acts as the single point of access for clients using backend services. The gateway handles incoming requests, routes valid requests to the backend, and protects backend services by controlling request frequency and detecting misuse.
 
 | | |
 |---|---|
 | **Language** | Java 21 |
 | **Framework** | Spring Boot 3.5.11 |
-| **Web Layer** | Spring MVC (via spring-boot-starter-web) |
-| **Build tool** | Maven Wrapper exclusively |
-| **Testing** | JUnit 5 (via spring-boot-starter-test) |
-| **State** | In-memory: ConcurrentHashMap for MVP (no database) |
-| **API Client** | Acts as a postman for all manual and automated testing |
+| **Web Layer** | Spring MVC |
+| **Build Tool** | Maven Wrapper |
+| **Testing** | JUnit 5 |
+| **State** | Redis-backed rate limit state, with in-memory components for logging and metrics |
+| **API Client** | Postman, curl, PowerShell, and Locust for manual and automated testing |
 
 ---
+
 For more details, please refer to our Docs.
 ## Documentation
 - [Architecture Decisions (ADRs)](./docs/01-architecture/decisions.md)
@@ -111,9 +140,9 @@ Both services run simultaneously and must use different ports, if they conflict,
 | API Gateway | `8080` | `api-gateway/src/main/resources/application.properties` |
 | Backend Service | `8081` | `backend-service/src/main/resources/application.properties` |
 
-=========================================================
+---
+
 ## Using the API Gateway
-> Added by Cathy
 
 All requests to the gateway **must include** an `X-API-Key` header.
 
@@ -130,13 +159,9 @@ All requests to the gateway **must include** an `X-API-Key` header.
 curl http://localhost:8080/api/test123/notes \
   -H "X-API-Key: dev-key-token"
 ```
-=========================================================
+---
 
-
-> The below has many overlap with the above section. Suggest to delete or modify them later.
-=========================================================
-# Backend + API Gateway System
-> Added by Avneet
+## Backend + API Gateway System
 
 This project contains a Spring Boot Backend Service and a custom API Gateway built using Spring MVC.
 
@@ -144,9 +169,9 @@ The system follows a microservices-style architecture where:
 - Backend handles business logic (notes API)
 - API Gateway acts as the entry point and forwards requests using RestTemplate (manual routing)
 
---------------------------------------------------
+---
 
-ARCHITECTURE
+## ARCHITECTURE
 
 Client (Browser / Postman)
         ↓
@@ -156,24 +181,24 @@ Backend Service (Port 8081)
         ↓
 Response returned
 
---------------------------------------------------
+---
 
-SERVICES & PORTS
+## SERVICES & PORTS
 
 Backend Service → http://localhost:8081  
 API Gateway → http://localhost:8080  
 
---------------------------------------------------
+---
 
-REQUIREMENTS
+## REQUIREMENTS
 - Java 21
 - Maven
---------------------------------------------------
+---
 
-HOW TO RUN THE PROJECT
+## HOW TO RUN THE PROJECT
 Step 0 — Open Project
-cd CS335_project
---------------------------------------------------
+cd rate-limiting-api-gateway
+---
 
 TERMINAL 1 — START BACKEND
 
@@ -196,7 +221,7 @@ Backend is running
 Optional:
 http://localhost:8081/hello  
 
---------------------------------------------------
+---
 
 TERMINAL 2  START API GATEWAY
 
@@ -211,21 +236,21 @@ Expected Output:
 Tomcat started on port 8080  
 Started ApiGatewayApplication  
 
---------------------------------------------------
+---
 
-IMPORTANT
+## IMPORTANT
 
 - Always start Backend first  
 - Then start Gateway  
 - Keep both terminals running  
 
---------------------------------------------------
+---
 
-API ENDPOINTS (BACKEND)
+## API ENDPOINTS (BACKEND)
 
 All note operations require a GUID (example: test123)
 
---------------------------------------------------
+---
 
 1. GET ALL NOTES
 
@@ -236,7 +261,7 @@ Expected Output:
 OR  
 [{"id":"1","content":"My first note"}]
 
---------------------------------------------------
+---
 
 2. CREATE NOTE
 
@@ -244,7 +269,7 @@ curl -X POST http://localhost:8081/api/test123/notes \
 -H "Content-Type: application/json" \
 -d '{"id":"1","content":"My first note"}'
 
---------------------------------------------------
+---
 
 3. UPDATE NOTE
 
@@ -252,13 +277,13 @@ curl -X PUT http://localhost:8081/api/test123/notes/1 \
 -H "Content-Type: application/json" \
 -d '{"id":"1","content":"Updated note"}'
 
---------------------------------------------------
+---
 
 4. DELETE NOTE
 
 curl -X DELETE http://localhost:8081/api/test123/notes/1
 
---------------------------------------------------
+---
 
 USING API GATEWAY (MAIN ENTRY POINT)
 
@@ -266,9 +291,9 @@ Instead of calling backend directly, use:
 
 http://localhost:8080/api/test123/notes  
 
---------------------------------------------------
+---
 
-HOW IT WORKS
+## HOW IT WORKS
 
 1. Client sends request to API Gateway (port 8080)  
 2. GatewayController receives the request  
@@ -279,7 +304,6 @@ HOW IT WORKS
 ---
 
 ## Logging & Metrics Module
-> Added by Mateo
 
 Records every request passing through the gateway and tracks whether it was allowed or blocked. Results are viewable at `/metrics` for live counts and `/metrics/logs` for the last 100 requests
 
@@ -615,7 +639,7 @@ TECHNOLOGIES USED
 - Maven  
 - REST APIs  
 
---------------------------------------------------
+---
 
 COMMON ISSUES
 
@@ -624,7 +648,7 @@ Port conflict → Ensure backend = 8081, gateway = 8080
 500 error → Backend not running  
 Connection refused → Start backend first  
 
---------------------------------------------------
+---
 
 FINAL CHECKLIST
 
@@ -633,7 +657,7 @@ Gateway running on 8080
 /health works on backend  
 /api/test123/notes works on gateway  
 
---------------------------------------------------
+---
 
 PROJECT STATUS
 
@@ -641,4 +665,4 @@ Backend Service — Working
 API Gateway — Working  
 Manual Routing — Implemented  
 End-to-End Communication — Working  
-=======
+
